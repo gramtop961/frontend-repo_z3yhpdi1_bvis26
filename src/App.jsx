@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import Spline from '@splinetool/react-spline'
+import LiveRuns from './components/LiveRuns'
 
 const apiBase = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000'
 
@@ -23,6 +24,7 @@ function Accounts() {
 
   useEffect(() => {
     fetchAccounts()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const [form, setForm] = useState({ site: 'FIVE_SURVEYS', username: '', credential_encrypted: '' })
@@ -50,12 +52,17 @@ function Accounts() {
   const runNow = async (accountId) => {
     setLoading(true)
     try {
-      await fetch(`${apiBase}/api/run-now`, {
+      const r = await fetch(`${apiBase}/api/run-now`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tenant_id: tenantId, account_id: accountId })
       })
-      alert('Run enqueued!')
+      const data = await r.json()
+      if (data?.run_id) {
+        alert('Run started: ' + data.run_id)
+      } else {
+        alert('Run enqueued!')
+      }
     } catch (e) {
       console.error(e)
     } finally {
@@ -131,6 +138,7 @@ function App() {
 
       <main className="py-10">
         <Accounts />
+        <LiveRuns />
       </main>
 
       <footer className="py-8 text-center text-xs text-gray-500">© {new Date().getFullYear()} GhostForm</footer>
